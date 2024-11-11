@@ -3,6 +3,11 @@
 # Designed for Ubuntu or other apt-based distros.
 # Tested on:
     # Ubuntu 22.08 LTS Server
+    
+if [ "$(id -u)" -ne 0 ]; then
+  echo "This script must be run as root. Exiting."
+  exit 1
+fi
 
 # Install Docker
 sudo apt update
