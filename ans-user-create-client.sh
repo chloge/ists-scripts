@@ -31,12 +31,7 @@ fi
 
 # Create a new user named "lemongreen"
 sudo adduser lemongreen
-
 sudo passwd lemongreen
-
-
-# Disable password authentication locally
-sudo passwd -l lemongreen
 
 # Prompt for the allowed remote host
 read -p "Enter the remote host IP address to allow logins from: " allowed_host
@@ -63,4 +58,4 @@ else
 fi
 
 # Confirm completion
-echo "User 'lemongreen' has been created, password login disabled locally, and remote login restricted to specified host."
+echo "User 'lemongreen' has been created, and remote login restricted to specified host."
