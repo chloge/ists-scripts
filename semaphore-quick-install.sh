@@ -20,27 +20,27 @@ if [ "$open_port" = "y" ]; then
     if command -v iptables > /dev/null 2>&1; then
         sudo iptables -I INPUT -p tcp --dport 3000 -j ACCEPT
         sudo iptables-save
-        echo "Port 3000 opened using iptables."
+        echo "Port 3000 opened"
 
     elif command -v nft > /dev/null 2>&1; then
         sudo nft add rule inet filter input tcp dport 3000 accept
-        echo "Port 3000 opened using nftables."
+        echo "Port 3000 opened"
 
     elif command -v firewall-cmd > /dev/null 2>&1; then
         sudo firewall-cmd --add-port=3000/tcp --permanent
         sudo firewall-cmd --reload
-        echo "Port 3000 opened using firewalld."
+        echo "Port 3000 opened"
 
     elif command -v ufw > /dev/null 2>&1; then
         sudo ufw allow 3000/tcp
         sudo ufw reload
-        echo "Port 3000 opened using ufw."
+        echo "Port 3000 opened"
 
     else
-        echo "No compatible firewall configuration tool found."
+        echo "No compatible firewall configuration tool present!"
     fi
 else
-    echo "Port 3000 remains closed."
+    echo "No changes made"
 fi
 
 # Display network interfaces and their IP addresses
