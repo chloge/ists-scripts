@@ -14,4 +14,13 @@ echo "Private key generated at ~/.ssh/id_rsa"
 
 echo "Public key forwarded to $remote_user@$ip_address. You can now use the public key for authentication."
 
+# Prompt user to secure copy the private key
+read -p "Would you like to secure copy the private key to the remote host's /tmp directory? (y/n): " scp_private_key
+
+if [ "$scp_private_key" = "y" ]; then
+    scp ~/.ssh/id_rsa $remote_user@$ip_address:/tmp/
+    echo "Private key securely copied to /tmp on $remote_user@$ip_address."
+else
+    echo "Private key not copied."
+fi
 
