@@ -7,13 +7,14 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Ensure SSH is installed
-if ! command -v ssh &> /dev/null; then
+if ! command -v sshd &> /dev/null; then
     echo "SSH is not installed. Installing SSH..."
 
     if command -v apt-get &> /dev/null; then
         sudo apt-get update
         sudo apt-get install -y openssh-server
     elif command -v dnf &> /dev/null; then
+        sudo dnf update
         sudo dnf install -y openssh-server
     elif command -v yum &> /dev/null; then
         sudo yum install -y openssh-server
@@ -32,10 +33,8 @@ fi
 # Create a new user named "lemongreen"
 sudo adduser lemongreen
 
-# Ensure the .ssh directory exists
-sudo mkdir -p /home/lemongreen/.ssh
-sudo chown lemongreen:lemongreen /home/lemongreen/.ssh
-sudo chmod 700 /home/lemongreen/.ssh
+sudo passwd lemongreen
+
 
 # Disable password authentication locally
 sudo passwd -l lemongreen
@@ -52,10 +51,10 @@ sudo sed -i '/^#PasswordAuthentication yes/c\PasswordAuthentication yes' /etc/ss
 sudo sed -i '/^PasswordAuthentication no/c\PasswordAuthentication yes' /etc/ssh/sshd_config
 
 # Restart SSH service to apply changes
-sudo systemctl restart ssh
+sudo systemctl restart sshd
 
 # Add "lemongreen" to the sudo group
-sudo usermod -aG sudo lemongreen
+sudo usermod -aG wheel lemongreen
 
 # Confirm completion
-echo "User 'lemongreen' has been created, password login disabled locally, remote login restricted to specified host, and sudo requires a password."
+echo "User 'lemongreen' has been created, password login disabled locally, and remote login restricted to specified host."
