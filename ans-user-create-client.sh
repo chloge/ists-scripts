@@ -14,7 +14,6 @@ if ! command -v sshd &> /dev/null; then
         sudo apt-get update
         sudo apt-get install -y openssh-server
     elif command -v dnf &> /dev/null; then
-        sudo dnf update
         sudo dnf install -y openssh-server
     elif command -v yum &> /dev/null; then
         sudo yum install -y openssh-server
@@ -53,8 +52,15 @@ sudo sed -i '/^PasswordAuthentication no/c\PasswordAuthentication yes' /etc/ssh/
 # Restart SSH service to apply changes
 sudo systemctl restart sshd
 
-# Add "lemongreen" to the sudo group
-sudo usermod -aG wheel lemongreen
+# Add "lemongreen" to the sudo or wheel group
+if grep -q "^sudo:" /etc/group; then
+    sudo usermod -aG sudo lemongreen
+elif grep -q "^wheel:" /etc/group; then
+    sudo usermod -aG wheel lemongreen
+else
+    echo "Neither 'sudo' nor 'wheel' group exists. Please create one of these groups and re-run the script."
+    exit 1
+fi
 
 # Confirm completion
 echo "User 'lemongreen' has been created, password login disabled locally, and remote login restricted to specified host."
