@@ -15,9 +15,6 @@ fi
 # Create a new user named "lemongreen"
 sudo adduser lemongreen
 
-# Prompt the user to set a password for "lemongreen" (necessary before disabling password login)
-sudo passwd lemongreen
-
 # Ensure the .ssh directory exists
 sudo mkdir -p /home/lemongreen/.ssh
 sudo chown lemongreen:lemongreen /home/lemongreen/.ssh
