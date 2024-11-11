@@ -2,7 +2,7 @@
 
 # Designed for Ubuntu or other apt-based distros.
 # Tested on:
-    # Ubuntu 22.04 LTS Server
+    # Ubuntu 22.08 LTS Server
 
 # Install Docker
 sudo apt update
