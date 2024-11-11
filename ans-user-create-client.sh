@@ -2,8 +2,25 @@
 
 # Check if the script is being run as root
 if [[ $EUID -ne 0 ]]; then
-   echo "This script must be run as root"
-   exit 1
+    echo "This script must be run as root"
+    exit 1
+fi
+
+# Ensure SSH is installed
+if ! command -v ssh &> /dev/null; then
+    echo "SSH is not installed. Installing SSH..."
+
+    if command -v apt-get &> /dev/null; then
+        sudo apt-get update
+        sudo apt-get install -y openssh-server
+    elif command -v dnf &> /dev/null; then
+        sudo dnf install -y openssh-server
+    elif command -v yum &> /dev/null; then
+        sudo yum install -y openssh-server
+    else
+        echo "Unsupported package manager. Please install SSH manually."
+        exit 1
+    fi
 fi
 
 # Check if the user "lemongreen" already exists
@@ -20,24 +37,19 @@ sudo mkdir -p /home/lemongreen/.ssh
 sudo chown lemongreen:lemongreen /home/lemongreen/.ssh
 sudo chmod 700 /home/lemongreen/.ssh
 
-# Prompt for the remote host and remote user to fetch the public key from
-read -p "Enter the remote host to fetch the public key from: " remote_host
-read -p "Enter the remote (root) user to use to fetch the public key: " remote_user
+# Disable password authentication locally
+sudo passwd -l lemongreen
 
-# Ensure the authorized_keys file exists on the client machine
-sudo touch /home/lemongreen/.ssh/authorized_keys
-sudo chown lemongreen:lemongreen /home/lemongreen/.ssh/authorized_keys
-sudo chmod 600 /home/lemongreen/.ssh/authorized_keys
+# Prompt for the allowed remote host
+read -p "Enter the remote host IP address to allow logins from: " allowed_host
 
-# Fetch the public key from the specified remote host and user
-sudo scp "${remote_user}@${remote_host}:/home/lemongreen/.ssh/id_rsa.pub" /home/lemongreen/.ssh/authorized_keys
+# Create a custom SSHD configuration for the "lemongreen" user
+echo "Match User lemongreen" | sudo tee /etc/ssh/sshd_config.d/lemongreen.conf
+echo "    AllowUsers lemongreen@${allowed_host}" | sudo tee -a /etc/ssh/sshd_config.d/lemongreen.conf
 
-# Set the appropriate permissions for the authorized_keys file
-sudo chown lemongreen:lemongreen /home/lemongreen/.ssh/authorized_keys
-sudo chmod 600 /home/lemongreen/.ssh/authorized_keys
-
-# Disable password authentication by adding "PasswordAuthentication no" to sshd_config
-sudo sed -i '/PasswordAuthentication/c\PasswordAuthentication no' /etc/ssh/sshd_config
+# Ensure password authentication remains enabled for remote login by modifying sshd_config
+sudo sed -i '/^#PasswordAuthentication yes/c\PasswordAuthentication yes' /etc/ssh/sshd_config
+sudo sed -i '/^PasswordAuthentication no/c\PasswordAuthentication yes' /etc/ssh/sshd_config
 
 # Restart SSH service to apply changes
 sudo systemctl restart ssh
@@ -45,11 +57,5 @@ sudo systemctl restart ssh
 # Add "lemongreen" to the sudo group
 sudo usermod -aG sudo lemongreen
 
-# Lock the password for the "lemongreen" user to prevent password login
-sudo passwd -l lemongreen
-
-# Enable passwordless sudo for the "lemongreen" user
-echo 'lemongreen ALL=(ALL) NOPASSWD:ALL' | sudo tee /etc/sudoers.d/lemongreen
-
 # Confirm completion
-echo "User 'lemongreen' has been created, password login disabled, passwordless sudo enabled, SSH key has been set up, and login restricted to specified remote host."
+echo "User 'lemongreen' has been created, password login disabled locally, remote login restricted to specified host, and sudo requires a password."
