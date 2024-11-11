@@ -23,22 +23,21 @@ sudo mkdir -p /home/lemongreen/.ssh
 sudo chown lemongreen:lemongreen /home/lemongreen/.ssh
 sudo chmod 700 /home/lemongreen/.ssh
 
-# Prompt for the remote host to fetch the public key from
+# Prompt for the remote host and remote user to fetch the public key from
 read -p "Enter the remote host to fetch the public key from: " remote_host
+read -p "Enter the remote (root) user to use to fetch the public key: " remote_user
 
-# Fetch the public key from the specified remote host
-sudo scp "${remote_host}:/home/lemongreen/.ssh/id_rsa.pub" /home/lemongreen/.ssh/authorized_keys
+# Ensure the authorized_keys file exists on the client machine
+sudo touch /home/lemongreen/.ssh/authorized_keys
+sudo chown lemongreen:lemongreen /home/lemongreen/.ssh/authorized_keys
+sudo chmod 600 /home/lemongreen/.ssh/authorized_keys
+
+# Fetch the public key from the specified remote host and user
+sudo scp "${remote_user}@${remote_host}:/home/lemongreen/.ssh/id_rsa.pub" /home/lemongreen/.ssh/authorized_keys
 
 # Set the appropriate permissions for the authorized_keys file
 sudo chown lemongreen:lemongreen /home/lemongreen/.ssh/authorized_keys
 sudo chmod 600 /home/lemongreen/.ssh/authorized_keys
-
-# Prompt for the allowed remote host
-read -p "Enter the remote host IP address to allow logins from: " allowed_host
-
-# Create a custom SSHD configuration for the "lemongreen" user
-echo "Match User lemongreen" | sudo tee /etc/ssh/sshd_config.d/lemongreen.conf
-echo "    AllowUsers lemongreen@${allowed_host}" | sudo tee -a /etc/ssh/sshd_config.d/lemongreen.conf
 
 # Disable password authentication by adding "PasswordAuthentication no" to sshd_config
 sudo sed -i '/PasswordAuthentication/c\PasswordAuthentication no' /etc/ssh/sshd_config
