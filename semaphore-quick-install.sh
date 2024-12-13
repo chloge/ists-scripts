@@ -15,10 +15,10 @@ sudo apt install -y docker.io
 sudo systemctl enable docker
 sudo systemctl start docker
 
-# Run Docker command
+# Command to bring Semaphore container up
 sudo docker run --name semaphore -p 3000:3000 -e SEMAPHORE_DB_DIALECT=bolt -e SEMAPHORE_ADMIN=admin -e SEMAPHORE_ADMIN_PASSWORD=changeme -e SEMAPHORE_ADMIN_NAME="Admin" -e SEMAPHORE_ADMIN_EMAIL=admin@localhost --restart=always -d semaphoreui/semaphore:v2.10.35
 
-# Prompt user to open port 3000
+# Open port 3000 if requested
 read -p "Would you like to open port 3000? Only allow this if you need the Semaphore web GUI accessable across the network (y/n): " open_port
 
 if [ "$open_port" = "y" ]; then
@@ -48,7 +48,7 @@ else
     echo "No changes made"
 fi
 
-# Display network interfaces and their IP addresses
+# Debug stuff
 ip addr
 
 echo "REMEMBER TO CHANGE SEMAPHORE ADMIN CREDENTIALS!!!!!!!!!"
